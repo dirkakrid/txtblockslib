@@ -3,11 +3,22 @@
 from txtblocks import TextElement, TextBlock, BlockParser
 
 def show_spanningtree_interface_detail(text):
+    """
+    Dictonary keys
+
+    stpvlan: General STP info about a VLAN
+    stpport: Spanning tree details per port
+
+    TODO mstp
+
+    """
+
     stpvlanid = TextElement('^VLAN(?P<vlanid>\d+) is executing the')
     stpvlanbrinfo = TextElement('Bridge Identifier has priority (?P<brprio>\d+), sysid (?P<brsysid>\d+), address (?P<braddr>([0-9a-f]{4}\.){2}[0-9a-f]{4})')
     stpvlanrootbr = TextElement('Current root has priority (?P<rootprio>\d+), address (?P<rootaddr>([0-9a-f]{4}\.){2}[0-9a-f]{4})')
+    stpvlanrootself = TextElement('(?P<rootself>We are the root of the spanning tree)')
     stprootport = TextElement('Root port is \d+ \((?P<rootport>.+)\), cost of root path is (?P<rootpathcost>\d+)')
-    stpvlan = TextBlock('stpvlan', [stpvlanid, stpvlanbrinfo, stpvlanrootbr, stprootport], '^VLAN\d+ is executing the', oneliner=True)
+    stpvlan = TextBlock('stpvlan', [stpvlanid, stpvlanbrinfo, stpvlanrootbr, stprootport, stpvlanrootself], '^VLAN\d+ is executing the', oneliner=True)
 
     port = TextElement('^Port \d+ \((?P<ifname>.+)\) of VLAN(?P<vlanid>\d+) is')
     bpdusent = TextElement('BPDU: sent (?P<bpdusent>\d+),')
@@ -15,7 +26,6 @@ def show_spanningtree_interface_detail(text):
     stpport = TextBlock('stpport', [port, bpdusent, bpdurecv], '^Port \d+', oneliner=True)
     
     blocks = BlockParser([stpport, stpvlan])
-
     result = blocks.parse(text)
 
     return result
